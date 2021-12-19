@@ -77,6 +77,7 @@ HEADERS = {}
 WEATHERBIT_COUNTRY = config['WEATHERBIT_COUNTRY']
 WEATHERBIT_LANG = config['WEATHERBIT_LANGUAGE']
 WEATHERBIT_POSTALCODE = config['WEATHERBIT_POSTALCODE']
+WEATHERBIT_CITYID = config['WEATHERBIT_CITYID']
 WEATHERBIT_HOURS = config['WEATHERBIT_HOURS']
 WEATHERBIT_DAYS = config['WEATHERBIT_DAYS']
 METRIC = config['LOCALE']['METRIC']
@@ -538,10 +539,16 @@ class Update(object):
 
             logger.info(f'connecting to server: {SERVER}')
 
-            options = str(f'&postal_code={WEATHERBIT_POSTALCODE}'
-                          f'&country={WEATHERBIT_COUNTRY}'
-                          f'&lang={WEATHERBIT_LANG}'
-                          f'&units={units}')
+            if WEATHERBIT_CITYID:
+                options = str(f'&city_id={WEATHERBIT_CITYID}'
+                              f'&lang={WEATHERBIT_LANG}'
+                              f'&units={units}')
+            else:
+                options = str(f'&postal_code={WEATHERBIT_POSTALCODE}'
+                              f'&country={WEATHERBIT_COUNTRY}'
+                              f'&lang={WEATHERBIT_LANG}'
+                              f'&units={units}')
+
 
             current_request_url = str(f'{current_endpoint}?key={WEATHERBIT_IO_KEY}{options}')
             daily_request_url = str(f'{daily_endpoint}?key={WEATHERBIT_IO_KEY}{options}&days={WEATHERBIT_DAYS}')
