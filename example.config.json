@@ -8,6 +8,9 @@
     "ANIMATION": true,
     "FRAMEBUFFER": "/dev/fb1",
     "PWM": false,
+    "PWM_CLOCK": 100,
+    "PWM_DIMMED_DUTY": 25,
+    "PWM_DEFAULT_DUTY": 100,
     "SHOW_FPS": false,
     "SHOW_API_STATS": true,
     "MOUSE": false

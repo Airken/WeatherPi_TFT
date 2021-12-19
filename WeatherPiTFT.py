@@ -138,10 +138,17 @@ def quit_all():
 
 
 PWM = config['DISPLAY']['PWM']
+PWM_CLOCK = config['DISPLAY']['PWM_CLOCK']
+PWM_DIMMED_DUTY = config['DISPLAY']['PWM_DIMMED_DUTY']
+PWM_DEFAULT_DUTY = config['DISPLAY']['PWM_DEFAULT_DUTY']
+PWM_DIMMED_VAL = int(PWM_CLOCK * PWM_DIMMED_DUTY / 100)
+PWM_DEFAULT_VAL = int(PWM_CLOCK * PWM_DEFAULT_DUTY / 100)
 
 if PWM:
     logger.info(f'set PWM for brightness control to PIN {PWM}')
+    os.system(f"echo 0 > /sys/class/backlight/soc\:backlight/brightness")
     os.system(f"gpio -g mode {PWM} pwm")
+    os.system(f"gpio pwmc {PWM_CLOCK}")
 else:
     logger.info('no PWM for brightness control configured')
 
@@ -834,7 +841,7 @@ def get_brightness():
     current_time = time.time()
     current_time = int(convert_timestamp(current_time, '%H'))
 
-    return 25 if current_time >= 20 or current_time <= 5 else 100
+    return PWM_DIMMED_VAL if current_time >= 20 or current_time <= 5 else PWM_DEFAULT_VAL
 
 
 def convert_timestamp(timestamp, param_string):
