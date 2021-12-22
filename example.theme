@@ -1,7 +1,7 @@
 {
   "DATE_FORMAT": {
-    "DATE": "%A - %d. %b %Y",
-    "TIME": "%H:%M:%S",
+    "DATE": "%b %d, %Y - %a",
+    "TIME": "%H:%M",
     "FORECAST_DAY": "%a",
     "SUNRISE_SUNSET": "%H:%M"
   },
@@ -21,9 +21,10 @@
   "FONT": {
     "MEDIUM": "Roboto-Medium.ttf",
     "BOLD": "Roboto-Bold.ttf",
-    "DATE_SIZE": 14,
-    "CLOCK_SIZE": 30,
+    "DATE_SIZE": 16,
+    "CLOCK_SIZE": 72,
     "SMALL_SIZE": 14,
-    "BIG_SIZE": 30
+    "STD_SIZE": 18,
+    "BIG_SIZE": 36
   }
 }

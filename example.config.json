@@ -1,8 +1,8 @@
 {
   "DISPLAY": {
-    "WIDTH": 240,
-    "HEIGHT": 320,
-    "USE_NATIVE": false,
+    "WIDTH": 320,
+    "HEIGHT": 480,
+    "USE_NATIVE": true,
     "FPS": 30,
     "AA": false,
     "ANIMATION": true,
