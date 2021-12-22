@@ -268,10 +268,13 @@ FONT_BOLD = theme["FONT"]["BOLD"]
 DATE_SIZE = int(theme["FONT"]["DATE_SIZE"] * ZOOM)
 CLOCK_SIZE = int(theme["FONT"]["CLOCK_SIZE"] * ZOOM)
 SMALL_SIZE = int(theme["FONT"]["SMALL_SIZE"] * ZOOM)
+STD_SIZE = int(theme["FONT"]["STD_SIZE"] * ZOOM)
 BIG_SIZE = int(theme["FONT"]["BIG_SIZE"] * ZOOM)
 
 FONT_SMALL = pygame.font.Font(FONT_PATH + FONT_MEDIUM, SMALL_SIZE)
 FONT_SMALL_BOLD = pygame.font.Font(FONT_PATH + FONT_BOLD, SMALL_SIZE)
+FONT_STD = pygame.font.Font(FONT_PATH + FONT_MEDIUM, STD_SIZE)
+FONT_STD_BOLD = pygame.font.Font(FONT_PATH + FONT_BOLD, STD_SIZE)
 FONT_BIG = pygame.font.Font(FONT_PATH + FONT_MEDIUM, BIG_SIZE)
 FONT_BIG_BOLD = pygame.font.Font(FONT_PATH + FONT_BOLD, BIG_SIZE)
 DATE_FONT = pygame.font.Font(FONT_PATH + FONT_BOLD, DATE_SIZE)
@@ -309,8 +312,8 @@ def image_factory(image_path):
 
 class Particles(object):
     def __init__(self):
-        self.size = int(20 * ZOOM)
-        self.count = 20
+        self.size = int(25 * ZOOM)
+        self.count = 25
         self.surf = pygame.Surface((self.size, self.size))
 
     def create_particle_list(self):
@@ -495,7 +498,6 @@ class DrawImage:
         self.draw_image(x)
 
     def draw_middle_position_icon(self):
-
         position_x = int((SURFACE_WIDTH - ((SURFACE_WIDTH / 3) / 2) - (self.image.get_rect()[2] / 2)))
 
         position_y = int((self.y - (self.image.get_rect()[3] / 2)))
@@ -536,12 +538,14 @@ class DrawImage:
 
 
 MARGIN = 10
-TITLE_AXIS_Y = 5
-MAIN1_AXIS_Y = TITLE_AXIS_Y + 15
-MAIN2_AXIS_Y = MAIN1_AXIS_Y + 100 + MARGIN
-MAIN3_AXIS_Y = MAIN2_AXIS_Y + 30 + MARGIN
-ANIME_AXIS_X = 215
-ANIME_AXIS_Y = MAIN2_AXIS_Y + 10
+TITLE_AXIS_Y = 0
+MAIN1_AXIS_Y = TITLE_AXIS_Y + 20
+MAIN1_HEIGHT = 100
+MAIN2_AXIS_Y = MAIN1_AXIS_Y + MAIN1_HEIGHT + MARGIN
+MAIN3_HEIGHT = 100
+ANIME_AXIS_X = 200
+ANIME_AXIS_Y = MAIN2_AXIS_Y + 15
+MAIN3_AXIS_Y = MAIN2_AXIS_Y + MAIN3_HEIGHT + MARGIN
 STATUS_AXIS_Y = SURFACE_HEIGHT - 20
 FORECAST_AXIS_Y = STATUS_AXIS_Y - 100 - MARGIN
 
@@ -749,6 +753,12 @@ class Update(object):
         precip = JSON_DATA['daily']['data'][0]['pop']
         precip_string = str(f'{precip} %')
 
+        humidity = current_forecast['rh']
+        humidity_string = str(f'RH: {humidity} %')
+        app_temp = str(int(round(current_forecast['app_temp'])))
+        feels_like = str(app_temp + temp_out_unit)
+        feels_string = str(f'Feels: {feels_like}')
+
         today = daily_forecast[0]
         day_1 = daily_forecast[1]
         day_2 = daily_forecast[2]
@@ -764,7 +774,7 @@ class Update(object):
         day_3_ts = time.mktime(time.strptime(day_3['datetime'], '%Y-%m-%d'))
         day_3_ts = convert_timestamp(day_3_ts, df_forecast)
 
-        today_min_max_temp = f"{int(today['low_temp'])} | {int(today['high_temp'])}"
+        today_min_max_temp = f"{int(today['low_temp'])}{temp_out_unit} | {int(today['high_temp'])}{temp_out_unit}"
         day_1_min_max_temp = f"{int(day_1['low_temp'])} | {int(day_1['high_temp'])}"
         day_2_min_max_temp = f"{int(day_2['low_temp'])} | {int(day_2['high_temp'])}"
         day_3_min_max_temp = f"{int(day_3['low_temp'])} | {int(day_3['high_temp'])}"
@@ -777,6 +787,7 @@ class Update(object):
         wind_speed = wind_speed * 3.6 if METRIC else wind_speed
         wind_speed_unit = 'km/h' if METRIC else 'mph'
         wind_speed_string = str(f'{round(wind_speed, 1)} {wind_speed_unit}')
+        wind_string = str(f'{wind_speed_string}, {wind_direction}')
 
         global weather_surf, UPDATING
 
@@ -792,34 +803,50 @@ class Update(object):
         if not ANIMATION:
             if PRECIPTYPE == config['LOCALE']['RAIN_STR']:
 
-                DrawImage(new_surf, images['preciprain'], size=20).draw_position(pos=(ANIME_AXIS_X, ANIME_AXIS_Y))
+                DrawImage(new_surf, images['preciprain'], size=25).draw_position(pos=(ANIME_AXIS_X, ANIME_AXIS_Y))
 
             elif PRECIPTYPE == config['LOCALE']['SNOW_STR']:
 
-                DrawImage(new_surf, images['precipsnow'], size=20).draw_position(pos=(ANIME_AXIS_X, ANIME_AXIS_Y))
+                DrawImage(new_surf, images['precipsnow'], size=25).draw_position(pos=(ANIME_AXIS_X, ANIME_AXIS_Y))
 
-        DrawImage(new_surf, images['sunrise'], MAIN3_AXIS_Y - 5, size=25).center(3, 1, -20)
-        DrawImage(new_surf, images['sunset'], MAIN3_AXIS_Y - 5, size=25).center(3, 2, -20)
+        RIGHT_AXIS_Y = MAIN2_AXIS_Y
+        RIGHT_AXIS_Y += 40
+        DrawImage(new_surf, images['sunrise'], RIGHT_AXIS_Y + 5, size=25).right()
+        RIGHT_AXIS_Y += 30
+        DrawImage(new_surf, images['sunset'], RIGHT_AXIS_Y + 5, size=25).right()
+        RIGHT_AXIS_Y += 30
+        logger.info(f'RIGHT_AXIS_Y: {RIGHT_AXIS_Y}')
 
-        FORECASTICON_AXIS_Y = FORECAST_AXIS_Y + 15
-        DrawImage(new_surf, images[FORECASTICON_DAY_1], FORECASTICON_AXIS_Y, size=70).center(3, 0)
-        DrawImage(new_surf, images[FORECASTICON_DAY_2], FORECASTICON_AXIS_Y, size=70).center(3, 1)
-        DrawImage(new_surf, images[FORECASTICON_DAY_3], FORECASTICON_AXIS_Y, size=70).center(3, 2)
+        FORECASTICON_AXIS_Y = FORECAST_AXIS_Y + 20
+        DrawImage(new_surf, images[FORECASTICON_DAY_1], FORECASTICON_AXIS_Y, size=60).center(3, 0)
+        DrawImage(new_surf, images[FORECASTICON_DAY_2], FORECASTICON_AXIS_Y, size=60).center(3, 1)
+        DrawImage(new_surf, images[FORECASTICON_DAY_3], FORECASTICON_AXIS_Y, size=60).center(3, 2)
 
-        #draw_wind_layer(new_surf, current_forecast['wind_dir'], 285)
-
-        #draw_moon_layer(new_surf, int(255 * ZOOM), int(60 * ZOOM))
+        draw_moon_layer(new_surf, MAIN3_AXIS_Y, int(70 * ZOOM))
 
         # draw all the strings
-        DrawString(new_surf, city_name, FONT_SMALL_BOLD, MAIN_FONT, TITLE_AXIS_Y).left()
-        DrawString(new_surf, today_min_max_temp, FONT_SMALL_BOLD, ORANGE, TITLE_AXIS_Y).right()
+        DrawString(new_surf, today_min_max_temp, FONT_STD_BOLD, YELLOW, TITLE_AXIS_Y).left()
+        DrawString(new_surf, city_name, FONT_STD_BOLD, MAIN_FONT, TITLE_AXIS_Y).right()
 
-        DrawString(new_surf, temp_out_string, FONT_BIG, ORANGE, MAIN2_AXIS_Y).left()
-        DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, MAIN2_AXIS_Y).right()
+        LEFT_AXIS_Y = MAIN2_AXIS_Y
+        DrawString(new_surf, summary_string, FONT_STD_BOLD, GREEN, LEFT_AXIS_Y + 20 - STD_SIZE).left()
+        LEFT_AXIS_Y += 20
+        DrawString(new_surf, temp_out_string, FONT_BIG_BOLD,   ORANGE, LEFT_AXIS_Y + 40 - BIG_SIZE).left()
+        DrawString(new_surf, humidity_string, FONT_SMALL_BOLD, BLUE,   LEFT_AXIS_Y + 20 - SMALL_SIZE).left(90)
+        DrawString(new_surf, feels_string,    FONT_SMALL_BOLD, YELLOW, LEFT_AXIS_Y + 40 - SMALL_SIZE).left(90)
+        LEFT_AXIS_Y += 40
+        DrawString(new_surf, wind_string, FONT_STD_BOLD, MAIN_FONT, LEFT_AXIS_Y + 20 - STD_SIZE).left()
+        LEFT_AXIS_Y += 20
+        logger.info(f'LEFT_AXIS_Y: {LEFT_AXIS_Y}')
 
-        DrawString(new_surf, summary_string, FONT_SMALL_BOLD, MAIN_FONT, MAIN3_AXIS_Y).left()
-        DrawString(new_surf, sunrise, FONT_SMALL_BOLD, MAIN_FONT, MAIN3_AXIS_Y).center(3, 1, 20)
-        DrawString(new_surf, sunset, FONT_SMALL_BOLD, MAIN_FONT, MAIN3_AXIS_Y).center(3, 2, 20)
+        RIGHT_AXIS_Y = MAIN2_AXIS_Y
+        DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, RIGHT_AXIS_Y).right()
+        RIGHT_AXIS_Y += 40
+        DrawString(new_surf, sunrise, FONT_STD, MAIN_FONT, RIGHT_AXIS_Y + STD_SIZE / 2).right(30)
+        RIGHT_AXIS_Y += 30
+        DrawString(new_surf, sunset, FONT_STD, MAIN_FONT, RIGHT_AXIS_Y + STD_SIZE / 2).right(30)
+        RIGHT_AXIS_Y += 30
+        logger.info(f'RIGHT_AXIS_Y: {RIGHT_AXIS_Y}')
 
         # Forecast region
         FORECASTDATE_AXIS_Y = FORECAST_AXIS_Y
@@ -827,7 +854,7 @@ class Update(object):
         DrawString(new_surf, day_2_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECASTDATE_AXIS_Y).center(3, 1)
         DrawString(new_surf, day_3_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECASTDATE_AXIS_Y).center(3, 2)
 
-        FORECASTTEMP_AXIS_Y = FORECASTICON_AXIS_Y + 70
+        FORECASTTEMP_AXIS_Y = FORECASTICON_AXIS_Y + 60
         DrawString(new_surf, day_1_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 0)
         DrawString(new_surf, day_2_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 1)
         DrawString(new_surf, day_3_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 2)
@@ -899,7 +926,7 @@ def draw_time_layer():
     logger.debug(f'Time: {date_time_string}')
 
     DrawString(time_surf, date_time_string, CLOCK_FONT, MAIN_FONT, MAIN1_AXIS_Y).right()
-    DrawString(time_surf, date_day_string, DATE_FONT, MAIN_FONT, MAIN1_AXIS_Y + 75 + 15).right()
+    DrawString(time_surf, date_day_string, DATE_FONT, MAIN_FONT, MAIN1_AXIS_Y + MAIN1_HEIGHT - DATE_SIZE).right()
 
 
 def draw_moon_layer(surf, y, size):
@@ -944,7 +971,7 @@ def draw_moon_layer(surf, y, size):
 
     x = (SURFACE_WIDTH / 2) - (size / 2)
 
-    surf.blit(image, (x, y))
+    surf.blit(image, (int(x), int(y)))
 
 
 def draw_wind_layer(surf, angle, y):
