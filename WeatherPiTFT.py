@@ -929,11 +929,37 @@ def draw_time_layer():
     DrawString(time_surf, date_day_string, DATE_FONT, MAIN_FONT, MAIN1_AXIS_Y + MAIN1_HEIGHT - DATE_SIZE).right()
 
 
+LUNARDAYS = 29.53058770576           # Long Term Average lunar month in days
+LUNARSECS = LUNARDAYS * 60 * 60 * 24 # Lunar month in seconds
+NEW_2000  = 947182440                # First 'new' moon in 2000 - "2000-01-6 18:14" (timestamp)
+MOON_PHASE = [
+    ["New",             0,              1             ],
+    ["Waxing Crescent", 1,              6.38264692644 ],
+    ["First Quarter",   6.38264692644,  8.38264692644 ],
+    ["Waxing Gibbous",  8.38264692644,  13.76529385288],
+    ["Full",            13.76529385288, 15.76529385288],
+    ["Waning Gibbous",  15.76529385288, 21.14794077932],
+    ["Last Quarter",    21.14794077932, 23.14794077932],
+    ["Waning Crescent", 23.14794077932, 28.53058770576],
+    ["",                28.53058770576, 29.53058770576],
+]
+
+
 def draw_moon_layer(surf, y, size):
-    # based on @miyaichi's fork -> great idea :)
     _size = 1000
-    dt = datetime.datetime.fromtimestamp(JSON_DATA['daily']['data'][0]['ts'])
-    moon_age = (((dt.year - 11) % 19) * 11 + [0, 2, 0, 2, 2, 4, 5, 6, 7, 8, 9, 10][dt.month - 1] + dt.day) % 30
+    # Porting from @gavin-ridgway 's change
+    timestamp = time.time()
+
+    # Calculate moon 'age' from: https://minkukel.com/en/various/calculating-moon-phase/
+    total_secs = timestamp - NEW_2000
+    current_secs = total_secs % LUNARSECS
+    current_frac = current_secs / LUNARSECS
+    moon_age = current_frac * LUNARDAYS
+
+    # Use lookup - New/Full/First-Last Quarter are allowed 1 day of the lunar cycle each
+    for p in range(len(MOON_PHASE)):
+        if (moon_age >= MOON_PHASE[p][1]) and (moon_age <= MOON_PHASE[p][2]):
+            moon_string = MOON_PHASE[p][0]
 
     image = Image.new("RGBA", (_size + 2, _size + 2))
     draw = ImageDraw.Draw(image)
@@ -944,7 +970,7 @@ def draw_moon_layer(surf, y, size):
     draw.ellipse([(1, 1), (_size, _size)], fill=WHITE)
 
     # draw dark side of the moon
-    theta = moon_age / 14.765 * math.pi
+    theta = moon_age / (LUNARDAYS / 2) * math.pi
     sum_x = sum_length = 0
 
     for _y in range(-radius, radius, 1):
@@ -952,7 +978,7 @@ def draw_moon_layer(surf, y, size):
         x = radius * math.sin(alpha)
         length = radius * math.cos(theta) * math.sin(alpha)
 
-        if moon_age < 15:
+        if moon_age < (LUNARDAYS / 2):
             start = (radius - x, radius + _y)
             end = (radius + length, radius + _y)
         else:
@@ -972,6 +998,7 @@ def draw_moon_layer(surf, y, size):
     x = (SURFACE_WIDTH / 2) - (size / 2)
 
     surf.blit(image, (int(x), int(y)))
+    DrawString(surf, moon_string, FONT_SMALL, MAIN_FONT, y + size).center(3,1)
 
 
 def draw_wind_layer(surf, angle, y):
