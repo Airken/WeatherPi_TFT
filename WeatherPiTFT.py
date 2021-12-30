@@ -754,7 +754,7 @@ class Update(object):
         precip_string = str(f'{precip} %')
 
         humidity = current_forecast['rh']
-        humidity_string = str(f'RH: {humidity} %')
+        humidity_string = str(f'{humidity}')
         app_temp = str(int(round(current_forecast['app_temp'])))
         feels_like = str(app_temp + temp_out_unit)
         feels_string = str(f'Feels: {feels_like}')
@@ -832,7 +832,8 @@ class Update(object):
         DrawString(new_surf, summary_string, FONT_STD_BOLD, GREEN, LEFT_AXIS_Y + 20 - STD_SIZE).left()
         LEFT_AXIS_Y += 20
         DrawString(new_surf, temp_out_string, FONT_BIG_BOLD,   ORANGE, LEFT_AXIS_Y + 40 - BIG_SIZE).left()
-        DrawString(new_surf, humidity_string, FONT_SMALL_BOLD, BLUE,   LEFT_AXIS_Y + 20 - SMALL_SIZE).left(90)
+        DrawString(new_surf, humidity_string, FONT_STD_BOLD, BLUE, LEFT_AXIS_Y).left(90)
+        DrawImage(new_surf, images['humidity'], LEFT_AXIS_Y, size=25).left(90 + STD_SIZE / 2 * (len(humidity_string)))
         DrawString(new_surf, feels_string,    FONT_SMALL_BOLD, YELLOW, LEFT_AXIS_Y + 40 - SMALL_SIZE).left(90)
         LEFT_AXIS_Y += 40
         DrawString(new_surf, wind_string, FONT_STD_BOLD, MAIN_FONT, LEFT_AXIS_Y + 20 - STD_SIZE).left()
