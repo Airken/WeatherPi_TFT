@@ -389,7 +389,7 @@ class DrawString:
 
         x = int(10 * ZOOM + (offset * ZOOM))
 
-        self.draw_string(x)
+        return self.draw_string(x)
 
     def right(self, offset=0):
         """
@@ -398,7 +398,7 @@ class DrawString:
 
         x = int((SURFACE_WIDTH - self.size[0] - (10 * ZOOM)) - (offset * ZOOM))
 
-        self.draw_string(x)
+        return self.draw_string(x)
 
     def center(self, parts, part, offset=0):
         """
@@ -410,7 +410,7 @@ class DrawString:
         x = int(((((SURFACE_WIDTH / parts) / 2) + ((SURFACE_WIDTH / parts) * part)) -
                  (self.size[0] / 2)) + (offset * ZOOM))
 
-        self.draw_string(x)
+        return self.draw_string(x)
 
     def draw_string(self, x):
         """
@@ -418,6 +418,8 @@ class DrawString:
         """
 
         self.surf.blit(self.font.render(self.string, True, self.color), (x, self.y))
+
+        return self.font.size(self.string)
 
 
 class DrawImage:
@@ -831,10 +833,13 @@ class Update(object):
         LEFT_AXIS_Y = MAIN2_AXIS_Y
         DrawString(new_surf, summary_string, FONT_STD_BOLD, GREEN, LEFT_AXIS_Y + 20 - STD_SIZE).left()
         LEFT_AXIS_Y += 20
-        DrawString(new_surf, temp_out_string, FONT_BIG_BOLD,   ORANGE, LEFT_AXIS_Y + 40 - BIG_SIZE).left()
-        DrawString(new_surf, humidity_string, FONT_STD_BOLD, BLUE, LEFT_AXIS_Y).left(90)
-        DrawImage(new_surf, images['humidity'], LEFT_AXIS_Y, size=25).left(90 + STD_SIZE / 2 * (len(humidity_string)))
-        DrawString(new_surf, feels_string,    FONT_SMALL_BOLD, YELLOW, LEFT_AXIS_Y + 40 - SMALL_SIZE).left(90)
+        text_width, text_height = DrawString(new_surf, temp_out_string, FONT_BIG_BOLD,   ORANGE, LEFT_AXIS_Y + 40 - BIG_SIZE).left()
+        RH_STR_AXIS_X = text_width + 10
+        text_width, text_height = DrawString(new_surf, humidity_string, FONT_STD_BOLD, BLUE, LEFT_AXIS_Y).left(RH_STR_AXIS_X)
+        RH_ICON_AXIS_X = RH_STR_AXIS_X + text_width
+        DrawImage(new_surf, images['humidity'], LEFT_AXIS_Y, size=25).left(RH_ICON_AXIS_X)
+        FL_STR_AXIS_X = RH_STR_AXIS_X
+        DrawString(new_surf, feels_string,    FONT_SMALL_BOLD, YELLOW, LEFT_AXIS_Y + 40 - SMALL_SIZE).left(FL_STR_AXIS_X)
         LEFT_AXIS_Y += 40
         DrawString(new_surf, wind_string, FONT_STD_BOLD, MAIN_FONT, LEFT_AXIS_Y + 20 - STD_SIZE).left()
         LEFT_AXIS_Y += 20
