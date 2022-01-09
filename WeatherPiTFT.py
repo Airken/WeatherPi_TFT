@@ -176,6 +176,9 @@ SURFACE_HEIGHT = 320
 
 USE_NATIVE = config['DISPLAY']['USE_NATIVE']
 if USE_NATIVE:
+    info = pygame.display.Info()
+    DISPLAY_WIDTH = info.current_w
+    DISPLAY_HEIGHT = info.current_h
     SURFACE_WIDTH = DISPLAY_WIDTH
     SURFACE_HEIGHT = DISPLAY_HEIGHT
 
@@ -188,47 +191,49 @@ AA = config['DISPLAY']['AA']
 ANIMATION = config['DISPLAY']['ANIMATION']
 
 
-# correction for 1:1 displays like hyperpixel4 square
-if DISPLAY_WIDTH / DISPLAY_HEIGHT == 1:
-    logger.info(f'square display configuration detected')
-    square_width = int(DISPLAY_WIDTH / float(4 / 3))
-    SCALE = float(square_width / SURFACE_WIDTH)
+if not USE_NATIVE:
+    # correction for 1:1 displays like hyperpixel4 square
+    if DISPLAY_WIDTH / DISPLAY_HEIGHT == 1:
+        logger.info(f'square display configuration detected')
+        square_width = int(DISPLAY_WIDTH / float(4 / 3))
+        SCALE = float(square_width / SURFACE_WIDTH)
 
-    logger.info(f'scale and display correction caused by square display')
-    logger.info(f'DISPLAY_WIDTH: {square_width} new SCALE: {SCALE}')
+        logger.info(f'scale and display correction caused by square display')
+        logger.info(f'DISPLAY_WIDTH: {square_width} new SCALE: {SCALE}')
 
-# check if a landscape display is configured
-if DISPLAY_WIDTH > DISPLAY_HEIGHT:
-    logger.info(f'landscape display configuration detected')
-    SCALE = float(DISPLAY_HEIGHT / SURFACE_HEIGHT)
+    # check if a landscape display is configured
+    if DISPLAY_WIDTH > DISPLAY_HEIGHT:
+        logger.info(f'landscape display configuration detected')
+        SCALE = float(DISPLAY_HEIGHT / SURFACE_HEIGHT)
 
-    logger.info(f'scale and display correction caused by landscape display')
-    logger.info(f'DISPLAY_HEIGHT: {DISPLAY_HEIGHT} new SCALE: {SCALE}')
+        logger.info(f'scale and display correction caused by landscape display')
+        logger.info(f'DISPLAY_HEIGHT: {DISPLAY_HEIGHT} new SCALE: {SCALE}')
 
-# zoom the application surface rendering to display size scale
-if SCALE != 1:
-    ZOOM = SCALE
+    # zoom the application surface rendering to display size scale
+    if SCALE != 1:
+        ZOOM = SCALE
 
-    if DISPLAY_HEIGHT < SURFACE_HEIGHT:
-        logger.info('screen smaller as surface area - zooming smaller')
-        SURFACE_HEIGHT = DISPLAY_HEIGHT
-        SURFACE_WIDTH = int(SURFACE_HEIGHT / (4 / 3))
-        logger.info(f'surface correction caused by small display')
-        if DISPLAY_WIDTH == DISPLAY_HEIGHT:
-            logger.info('small and square')
-            ZOOM = round(ZOOM, 2)
+        if DISPLAY_HEIGHT < SURFACE_HEIGHT:
+            logger.info('screen smaller as surface area - zooming smaller')
+            SURFACE_HEIGHT = DISPLAY_HEIGHT
+            SURFACE_WIDTH = int(SURFACE_HEIGHT / (4 / 3))
+            logger.info(f'surface correction caused by small display')
+            if DISPLAY_WIDTH == DISPLAY_HEIGHT:
+                logger.info('small and square')
+                ZOOM = round(ZOOM, 2)
+            else:
+                ZOOM = round(ZOOM, 1)
+            logger.info(f'zoom correction caused by small display')
         else:
-            ZOOM = round(ZOOM, 1)
-        logger.info(f'zoom correction caused by small display')
-    else:
-        logger.info('screen bigger as surface area - zooming bigger')
-        SURFACE_WIDTH = int(240 * ZOOM)
-        SURFACE_HEIGHT = int(320 * ZOOM)
-        logger.info(f'surface correction caused by bigger display')
+            logger.info('screen bigger as surface area - zooming bigger')
+            SURFACE_WIDTH = int(240 * ZOOM)
+            SURFACE_HEIGHT = int(320 * ZOOM)
+            logger.info(f'surface correction caused by bigger display')
 
-    logger.info(f'SURFACE_WIDTH: {SURFACE_WIDTH} SURFACE_HEIGHT: {SURFACE_HEIGHT} ZOOM: {ZOOM}')
+        logger.info(f'SURFACE_WIDTH: {SURFACE_WIDTH} SURFACE_HEIGHT: {SURFACE_HEIGHT} ZOOM: {ZOOM}')
 
 FIT_SCREEN = (int((DISPLAY_WIDTH - SURFACE_WIDTH) / 2), int((DISPLAY_HEIGHT - SURFACE_HEIGHT) / 2))
+PORTRAIT_MODE = (SURFACE_HEIGHT > SURFACE_WIDTH)
 
 # the real display surface
 tft_surf = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT), pygame.NOFRAME if config['ENV'] == 'Pi' else 0)
@@ -265,8 +270,10 @@ COLOR_LIST = [BLUE, LIGHT_BLUE, DARK_BLUE]
 
 FONT_MEDIUM = theme["FONT"]["MEDIUM"]
 FONT_BOLD = theme["FONT"]["BOLD"]
+FONT_MONO = theme["FONT"]["MONO"]
 DATE_SIZE = int(theme["FONT"]["DATE_SIZE"] * ZOOM)
 CLOCK_SIZE = int(theme["FONT"]["CLOCK_SIZE"] * ZOOM)
+CLOCK_SIZE += 8 if not PORTRAIT_MODE else 0
 SMALL_SIZE = int(theme["FONT"]["SMALL_SIZE"] * ZOOM)
 STD_SIZE = int(theme["FONT"]["STD_SIZE"] * ZOOM)
 BIG_SIZE = int(theme["FONT"]["BIG_SIZE"] * ZOOM)
@@ -278,7 +285,7 @@ FONT_STD_BOLD = pygame.font.Font(FONT_PATH + FONT_BOLD, STD_SIZE)
 FONT_BIG = pygame.font.Font(FONT_PATH + FONT_MEDIUM, BIG_SIZE)
 FONT_BIG_BOLD = pygame.font.Font(FONT_PATH + FONT_BOLD, BIG_SIZE)
 DATE_FONT = pygame.font.Font(FONT_PATH + FONT_BOLD, DATE_SIZE)
-CLOCK_FONT = pygame.font.Font(FONT_PATH + FONT_BOLD, CLOCK_SIZE)
+CLOCK_FONT = pygame.font.Font(FONT_PATH + FONT_MONO, CLOCK_SIZE)
 
 WEATHERICON = 'unknown'
 
@@ -541,16 +548,54 @@ class DrawImage:
 
 MARGIN = 10
 TITLE_AXIS_Y = 0
-MAIN1_AXIS_Y = TITLE_AXIS_Y + 20
+TITLE_SIZE = 20
+MAIN1_AXIS_Y = TITLE_AXIS_Y + TITLE_SIZE + 10
 MAIN1_HEIGHT = 100
 MAIN2_AXIS_Y = MAIN1_AXIS_Y + MAIN1_HEIGHT + MARGIN
-MAIN3_HEIGHT = 100
-ANIME_AXIS_X = 200
-ANIME_AXIS_Y = MAIN2_AXIS_Y + 15
-MAIN3_AXIS_Y = MAIN2_AXIS_Y + MAIN3_HEIGHT + MARGIN
+MAIN2_HEIGHT = 100
+MAIN3_AXIS_Y = MAIN2_AXIS_Y + MAIN2_HEIGHT + MARGIN
 STATUS_AXIS_Y = SURFACE_HEIGHT - 20
-FORECAST_AXIS_Y = STATUS_AXIS_Y - 100 - MARGIN
 
+FORECAST_DATE_HEIGHT = 20
+FORECAST_ICON_SIZE = 60
+FORECAST_TEMP_HEIGHT = 20
+FORECAST_HEIGHT = FORECAST_DATE_HEIGHT + FORECAST_ICON_SIZE + FORECAST_TEMP_HEIGHT
+FORECAST_AXIS_Y = STATUS_AXIS_Y - FORECAST_HEIGHT - MARGIN
+FORECAST_DATE_AXIS_Y = FORECAST_AXIS_Y
+FORECAST_ICON_AXIS_Y = FORECAST_AXIS_Y + FORECAST_DATE_HEIGHT
+FORECAST_TEMP_AXIS_Y = FORECAST_ICON_AXIS_Y + FORECAST_ICON_SIZE
+
+if PORTRAIT_MODE:
+    FORECAST_SLICES = 3
+    TEMP_OUT_AXIS_Y = MAIN2_AXIS_Y + 20
+    ANIME_AXIS_X = 200
+    ANIME_AXIS_Y = MAIN2_AXIS_Y + 10
+    MOONICON_AXIS_Y = MAIN3_AXIS_Y
+    WEATHERICON_SIZE = 90
+    MOONICON_SIZE = 70
+    WEATHERICON_AXIS_Y = MAIN1_AXIS_Y + (MAIN1_HEIGHT - WEATHERICON_SIZE)
+else:
+    FORECAST_SLICES = 6
+    TEMP_OUT_AXIS_Y = FORECAST_AXIS_Y - 20
+    ANIME_AXIS_X = 10
+    ANIME_AXIS_Y = TEMP_OUT_AXIS_Y + 20 + 40 + MARGIN
+    MOONICON_AXIS_Y = MAIN1_AXIS_Y + 10
+    WEATHERICON_SIZE = 90
+    MOONICON_SIZE = 90
+    WEATHERICON_AXIS_Y = MAIN1_AXIS_Y + (MAIN1_HEIGHT - WEATHERICON_SIZE)
+
+FORECAST_INDEX1 = FORECAST_SLICES - 3
+FORECAST_INDEX2 = FORECAST_SLICES - 2
+FORECAST_INDEX3 = FORECAST_SLICES - 1
+
+def align_right(size):
+    return SURFACE_WIDTH - size - 10
+
+def align_left(size):
+    return 10
+
+def centered(size):
+    return (SURFACE_WIDTH / 2) - (size / 2)
 
 class Update(object):
 
@@ -753,7 +798,7 @@ class Update(object):
         temp_out_unit = '°C' if METRIC else '°F'
         temp_out_string = str(temp_out + temp_out_unit)
         precip = JSON_DATA['daily']['data'][0]['pop']
-        precip_string = str(f'{precip} %')
+        precip_string = str(f'{precip}%')
 
         humidity = current_forecast['rh']
         humidity_string = str(f'{humidity}')
@@ -800,7 +845,11 @@ class Update(object):
         draw_status(new_surf, 'refresh', RED if REFRESH_ERROR else GREEN, 1)
         draw_status(new_surf, 'path', RED if PATH_ERROR else GREEN, 0)
 
-        DrawImage(new_surf, images[WEATHERICON], MAIN1_AXIS_Y + 10, size=90).left()
+        WeatherImage = DrawImage(new_surf, images[WEATHERICON], WEATHERICON_AXIS_Y, size=WEATHERICON_SIZE)
+        if PORTRAIT_MODE:
+            WeatherImage.left()
+        else:
+            WeatherImage.center(4, 0)
 
         if not ANIMATION:
             if PRECIPTYPE == config['LOCALE']['RAIN_STR']:
@@ -811,59 +860,56 @@ class Update(object):
 
                 DrawImage(new_surf, images['precipsnow'], size=25).draw_position(pos=(ANIME_AXIS_X, ANIME_AXIS_Y))
 
-        RIGHT_AXIS_Y = MAIN2_AXIS_Y
-        RIGHT_AXIS_Y += 40
-        DrawImage(new_surf, images['sunrise'], RIGHT_AXIS_Y + 5, size=25).right()
-        RIGHT_AXIS_Y += 30
-        DrawImage(new_surf, images['sunset'], RIGHT_AXIS_Y + 5, size=25).right()
-        RIGHT_AXIS_Y += 30
-        logger.info(f'RIGHT_AXIS_Y: {RIGHT_AXIS_Y}')
-
-        FORECASTICON_AXIS_Y = FORECAST_AXIS_Y + 20
-        DrawImage(new_surf, images[FORECASTICON_DAY_1], FORECASTICON_AXIS_Y, size=60).center(3, 0)
-        DrawImage(new_surf, images[FORECASTICON_DAY_2], FORECASTICON_AXIS_Y, size=60).center(3, 1)
-        DrawImage(new_surf, images[FORECASTICON_DAY_3], FORECASTICON_AXIS_Y, size=60).center(3, 2)
-
-        draw_moon_layer(new_surf, MAIN3_AXIS_Y, int(70 * ZOOM))
+        draw_moon_layer(new_surf, MOONICON_AXIS_Y, int(MOONICON_SIZE * ZOOM))
 
         # draw all the strings
-        DrawString(new_surf, today_min_max_temp, FONT_STD_BOLD, YELLOW, TITLE_AXIS_Y).left()
-        DrawString(new_surf, city_name, FONT_STD_BOLD, MAIN_FONT, TITLE_AXIS_Y).right()
+        TITLE_AXIS_Y_ADJ = TITLE_AXIS_Y + (20 - STD_SIZE) / 2
+        DrawString(new_surf, today_min_max_temp, FONT_STD_BOLD, YELLOW, TITLE_AXIS_Y_ADJ).left()
+        DrawString(new_surf, city_name, FONT_STD_BOLD, MAIN_FONT, TITLE_AXIS_Y_ADJ).right()
 
-        LEFT_AXIS_Y = MAIN2_AXIS_Y
-        DrawString(new_surf, summary_string, FONT_STD_BOLD, GREEN, LEFT_AXIS_Y + 20 - STD_SIZE).left()
-        LEFT_AXIS_Y += 20
-        text_width, text_height = DrawString(new_surf, temp_out_string, FONT_BIG_BOLD,   ORANGE, LEFT_AXIS_Y + 40 - BIG_SIZE).left()
-        RH_STR_AXIS_X = text_width + 10
-        text_width, text_height = DrawString(new_surf, humidity_string, FONT_STD_BOLD, BLUE, LEFT_AXIS_Y).left(RH_STR_AXIS_X)
-        RH_ICON_AXIS_X = RH_STR_AXIS_X + text_width
-        DrawImage(new_surf, images['humidity'], LEFT_AXIS_Y, size=25).left(RH_ICON_AXIS_X)
+        SUMMARY_AXIS_Y = WEATHERICON_AXIS_Y + WEATHERICON_SIZE
+        DrawString(new_surf, summary_string, FONT_SMALL, GREEN, SUMMARY_AXIS_Y).left()
+        width, height = DrawString(new_surf, temp_out_string, FONT_BIG_BOLD, ORANGE, TEMP_OUT_AXIS_Y).left()
+        INFO_AXIS_Y = TEMP_OUT_AXIS_Y
+        RH_STR_AXIS_X = width + 10
+        width, height = DrawString(new_surf, humidity_string, FONT_STD_BOLD, BLUE, INFO_AXIS_Y).left(RH_STR_AXIS_X)
+        RH_ICON_AXIS_X = RH_STR_AXIS_X + width
+        DrawImage(new_surf, images['humidity'], INFO_AXIS_Y, size=25).left(RH_ICON_AXIS_X)
         FL_STR_AXIS_X = RH_STR_AXIS_X
-        DrawString(new_surf, feels_string,    FONT_SMALL_BOLD, YELLOW, LEFT_AXIS_Y + 40 - SMALL_SIZE).left(FL_STR_AXIS_X)
-        LEFT_AXIS_Y += 40
-        DrawString(new_surf, wind_string, FONT_STD_BOLD, MAIN_FONT, LEFT_AXIS_Y + 20 - STD_SIZE).left()
-        LEFT_AXIS_Y += 20
-        logger.info(f'LEFT_AXIS_Y: {LEFT_AXIS_Y}')
+        FL_STR_AXIS_Y = INFO_AXIS_Y + 20
+        DrawString(new_surf, feels_string, FONT_SMALL_BOLD, YELLOW, FL_STR_AXIS_Y).left(FL_STR_AXIS_X)
+        WIND_STR_AXIS_Y = INFO_AXIS_Y + 40
+        DrawString(new_surf, wind_string, FONT_STD_BOLD, VIOLET, WIND_STR_AXIS_Y).left()
+        logger.info(f'INFO_AXIS_Y: {INFO_AXIS_Y}')
 
-        RIGHT_AXIS_Y = MAIN2_AXIS_Y
-        DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, RIGHT_AXIS_Y).right()
-        RIGHT_AXIS_Y += 40
-        DrawString(new_surf, sunrise, FONT_STD, MAIN_FONT, RIGHT_AXIS_Y + STD_SIZE / 2).right(30)
-        RIGHT_AXIS_Y += 30
-        DrawString(new_surf, sunset, FONT_STD, MAIN_FONT, RIGHT_AXIS_Y + STD_SIZE / 2).right(30)
-        RIGHT_AXIS_Y += 30
-        logger.info(f'RIGHT_AXIS_Y: {RIGHT_AXIS_Y}')
+        PRECIP_AXIS_Y = ANIME_AXIS_Y - 10
 
+        if PORTRAIT_MODE:
+            width, height = DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, PRECIP_AXIS_Y).right()
+            SUNRISE_AXIS_X = 0
+            SUNRISE_AXIS_Y = PRECIP_AXIS_Y + height
+        else:
+            width, height = DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, PRECIP_AXIS_Y).left(30)
+            SUNRISE_AXIS_X = (SURFACE_WIDTH / 7) * 4
+            SUNRISE_AXIS_Y = PRECIP_AXIS_Y
+
+        DrawImage(new_surf, images['sunrise'], SUNRISE_AXIS_Y, size=25).right(SUNRISE_AXIS_X)
+        DrawString(new_surf, sunrise, FONT_STD, MAIN_FONT, SUNRISE_AXIS_Y + (30 - STD_SIZE) / 2).right(30 + SUNRISE_AXIS_X)
+        SUNSET_AXIS_Y = SUNRISE_AXIS_Y + 30
+        DrawImage(new_surf, images['sunset'], SUNSET_AXIS_Y, size=25).right(SUNRISE_AXIS_X)
+        DrawString(new_surf, sunset, FONT_STD, MAIN_FONT, SUNSET_AXIS_Y + (30 - STD_SIZE) / 2).right(30 + SUNRISE_AXIS_X)
         # Forecast region
-        FORECASTDATE_AXIS_Y = FORECAST_AXIS_Y
-        DrawString(new_surf, day_1_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECASTDATE_AXIS_Y).center(3, 0)
-        DrawString(new_surf, day_2_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECASTDATE_AXIS_Y).center(3, 1)
-        DrawString(new_surf, day_3_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECASTDATE_AXIS_Y).center(3, 2)
+        DrawString(new_surf, day_1_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECAST_DATE_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX1)
+        DrawString(new_surf, day_2_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECAST_DATE_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX2)
+        DrawString(new_surf, day_3_ts, FONT_SMALL_BOLD, MAIN_FONT, FORECAST_DATE_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX3)
 
-        FORECASTTEMP_AXIS_Y = FORECASTICON_AXIS_Y + 60
-        DrawString(new_surf, day_1_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 0)
-        DrawString(new_surf, day_2_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 1)
-        DrawString(new_surf, day_3_min_max_temp, FONT_SMALL_BOLD, MAIN_FONT, FORECASTTEMP_AXIS_Y).center(3, 2)
+        DrawImage(new_surf, images[FORECASTICON_DAY_1], FORECAST_ICON_AXIS_Y, size=FORECAST_ICON_SIZE).center(FORECAST_SLICES, FORECAST_INDEX1)
+        DrawImage(new_surf, images[FORECASTICON_DAY_2], FORECAST_ICON_AXIS_Y, size=FORECAST_ICON_SIZE).center(FORECAST_SLICES, FORECAST_INDEX2)
+        DrawImage(new_surf, images[FORECASTICON_DAY_3], FORECAST_ICON_AXIS_Y, size=FORECAST_ICON_SIZE).center(FORECAST_SLICES, FORECAST_INDEX3)
+
+        DrawString(new_surf, day_1_min_max_temp, FONT_SMALL_BOLD, ORANGE, FORECAST_TEMP_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX1)
+        DrawString(new_surf, day_2_min_max_temp, FONT_SMALL_BOLD, ORANGE, FORECAST_TEMP_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX2)
+        DrawString(new_surf, day_3_min_max_temp, FONT_SMALL_BOLD, ORANGE, FORECAST_TEMP_AXIS_Y).center(FORECAST_SLICES, FORECAST_INDEX3)
 
         # Status region
         local_ip = extract_ip()
@@ -931,8 +977,16 @@ def draw_time_layer():
     logger.debug(f'Day: {date_day_string}')
     logger.debug(f'Time: {date_time_string}')
 
-    DrawString(time_surf, date_time_string, CLOCK_FONT, MAIN_FONT, MAIN1_AXIS_Y).right()
-    DrawString(time_surf, date_day_string, DATE_FONT, MAIN_FONT, MAIN1_AXIS_Y + MAIN1_HEIGHT - DATE_SIZE).right()
+    if PORTRAIT_MODE:
+        CLOCK_STR_AXIS_Y = MAIN1_AXIS_Y
+        DrawString(time_surf, date_time_string, CLOCK_FONT, MAIN_FONT, CLOCK_STR_AXIS_Y).right()
+        DATE_STR_AXIS_Y = MAIN1_AXIS_Y + MAIN1_HEIGHT - DATE_SIZE
+        DrawString(time_surf, date_day_string, DATE_FONT, MAIN_FONT, DATE_STR_AXIS_Y).right()
+    else:
+        CLOCK_STR_AXIS_Y = MAIN1_AXIS_Y + (MAIN1_HEIGHT - CLOCK_SIZE) / 2
+        DrawString(time_surf, date_time_string, CLOCK_FONT, MAIN_FONT, CLOCK_STR_AXIS_Y).center(1, 0)
+        DATE_STR_AXIS_Y = TITLE_AXIS_Y + (20 - STD_SIZE) / 2
+        DrawString(time_surf, date_day_string, FONT_STD, MAIN_FONT, DATE_STR_AXIS_Y).center(1, 0)
 
 
 LUNARDAYS = 29.53058770576           # Long Term Average lunar month in days
@@ -1001,10 +1055,15 @@ def draw_moon_layer(surf, y, size):
     image = image.resize((size, size), Image.LANCZOS if AA else Image.BILINEAR)
     image = pygame.image.fromstring(image.tobytes(), image.size, image.mode)
 
-    x = (SURFACE_WIDTH / 2) - (size / 2)
+    MoonString = DrawString(surf, moon_string, FONT_SMALL, MAIN_FONT, y + size)
+    if PORTRAIT_MODE:
+        x = centered(size)
+        MoonString.center(3,1)
+    else:
+        x = align_right(size)
+        MoonString.right()
 
     surf.blit(image, (int(x), int(y)))
-    DrawString(surf, moon_string, FONT_SMALL, MAIN_FONT, y + size).center(3,1)
 
 
 def draw_wind_layer(surf, angle, y):
