@@ -14,16 +14,17 @@
     "RED": [231, 76, 60],
     "GREEN": [39, 174, 96],
     "BLUE": [52, 152, 219],
-    "YELLOW": [241, 196, 15],
+    "YELLOW": [255, 194, 28],
     "ORANGE": [247, 147, 29],
     "VIOLET": [186, 85, 211]
   },
   "FONT": {
-    "MEDIUM": "Roboto-Medium.ttf",
-    "BOLD": "Roboto-Bold.ttf",
+    "MEDIUM": "Audiowide-Regular.ttf",
+    "BOLD": "Audiowide-Regular.ttf",
+    "MONO": "Montserrat-Medium.ttf",
     "DATE_SIZE": 16,
     "CLOCK_SIZE": 72,
-    "SMALL_SIZE": 14,
+    "SMALL_SIZE": 16,
     "STD_SIZE": 18,
     "BIG_SIZE": 36
   }
