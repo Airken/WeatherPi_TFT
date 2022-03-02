@@ -890,7 +890,7 @@ class Update(object):
             SUNRISE_AXIS_Y = PRECIP_AXIS_Y + height
         else:
             width, height = DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, PRECIP_AXIS_Y).left(30)
-            SUNRISE_AXIS_X = (SURFACE_WIDTH / 7) * 4
+            SUNRISE_AXIS_X = SURFACE_WIDTH / 2
             SUNRISE_AXIS_Y = PRECIP_AXIS_Y
 
         DrawImage(new_surf, images['sunrise'], SUNRISE_AXIS_Y, size=25).right(SUNRISE_AXIS_X)
