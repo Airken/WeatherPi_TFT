@@ -800,7 +800,7 @@ class Update(object):
         precip = JSON_DATA['daily']['data'][0]['pop']
         precip_string = str(f'{precip}%')
 
-        humidity = current_forecast['rh']
+        humidity = int(current_forecast['rh'])
         humidity_string = str(f'{humidity}')
         app_temp = str(int(round(current_forecast['app_temp'])))
         feels_like = str(app_temp + temp_out_unit)
