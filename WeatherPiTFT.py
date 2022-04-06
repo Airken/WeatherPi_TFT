@@ -568,7 +568,7 @@ FORECAST_TEMP_AXIS_Y = FORECAST_ICON_AXIS_Y + FORECAST_ICON_SIZE
 if PORTRAIT_MODE:
     FORECAST_SLICES = 3
     TEMP_OUT_AXIS_Y = MAIN2_AXIS_Y + 20
-    ANIME_AXIS_X = 200
+    ANIME_AXIS_X = SURFACE_WIDTH - 25 - 10
     ANIME_AXIS_Y = MAIN2_AXIS_Y + 10
     MOONICON_AXIS_Y = MAIN3_AXIS_Y
     WEATHERICON_SIZE = 90
@@ -885,7 +885,7 @@ class Update(object):
         PRECIP_AXIS_Y = ANIME_AXIS_Y - 10
 
         if PORTRAIT_MODE:
-            width, height = DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, PRECIP_AXIS_Y).right()
+            width, height = DrawString(new_surf, precip_string, FONT_BIG, PRECIPCOLOR, PRECIP_AXIS_Y).right(30)
             SUNRISE_AXIS_X = 0
             SUNRISE_AXIS_Y = PRECIP_AXIS_Y + height
         else:
