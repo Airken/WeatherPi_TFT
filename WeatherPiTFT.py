@@ -189,6 +189,7 @@ FPS = config['DISPLAY']['FPS']
 SHOW_FPS = config['DISPLAY']['SHOW_FPS']
 AA = config['DISPLAY']['AA']
 ANIMATION = config['DISPLAY']['ANIMATION']
+GRID_SIZE = config['DISPLAY']['GRID_SIZE']
 
 
 if not USE_NATIVE:
@@ -841,6 +842,9 @@ class Update(object):
         new_surf = pygame.Surface((SURFACE_WIDTH, SURFACE_HEIGHT))
         new_surf.fill(BACKGROUND)
 
+        if GRID_SIZE:
+            draw_grid(new_surf)
+
         draw_status(new_surf, 'wifi', RED if CONNECTION_ERROR else GREEN, 2)
         draw_status(new_surf, 'refresh', RED if REFRESH_ERROR else GREEN, 1)
         draw_status(new_surf, 'path', RED if PATH_ERROR else GREEN, 0)
@@ -967,6 +971,12 @@ def convert_timestamp(timestamp, param_string):
 
     return timestring
 
+def draw_grid(surf):
+    blockSize = GRID_SIZE
+    for x in range(0, SURFACE_WIDTH, blockSize):
+        for y in range(0, SURFACE_HEIGHT, blockSize):
+            rect = pygame.Rect(x, y, blockSize, blockSize)
+            pygame.draw.rect(surf, WHITE, rect, 1)
 
 def draw_time_layer():
     timestamp = time.time()
