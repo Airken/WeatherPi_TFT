@@ -104,6 +104,8 @@ try:
             # using the dashboard on a raspberry with TFT displays might make this necessary
             os.putenv('SDL_FBDEV', config['DISPLAY']['FRAMEBUFFER'])
             os.environ["SDL_VIDEODRIVER"] = "fbcon"
+        else:
+            os.environ["DISPLAY"] = ":0"
 
         LOG_PATH = '/mnt/ramdisk/'
         WEATHERBIT_IO_KEY = config['WEATHERBIT_IO_KEY']
