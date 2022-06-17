@@ -237,7 +237,7 @@ FIT_SCREEN = (int((DISPLAY_WIDTH - SURFACE_WIDTH) / 2), int((DISPLAY_HEIGHT - SU
 PORTRAIT_MODE = (SURFACE_HEIGHT > SURFACE_WIDTH)
 
 # the real display surface
-tft_surf = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT), pygame.NOFRAME if config['ENV'] == 'Pi' else 0)
+tft_surf = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN if config['ENV'] == 'Pi' else 0)
 
 # the drawing area - everything will be drawn here before scaling and rendering on the display tft_surf
 display_surf = pygame.Surface((SURFACE_WIDTH, SURFACE_HEIGHT))
